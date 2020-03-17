@@ -29,7 +29,12 @@ describe('app routes', () => {
           'mix ingredients',
           'put dough on cookie sheet',
           'bake for 10 minutes'
-        ]
+        ],
+        ingredients: [{
+          name: 'cookie dough',
+          amount: 2,
+          measurement: 'cup'
+        }]
       })
       .then(res => {
         expect(res.body).toEqual({
@@ -41,6 +46,12 @@ describe('app routes', () => {
             'put dough on cookie sheet',
             'bake for 10 minutes'
           ],
+          ingredients: [{
+            _id: expect.any(String),
+            name: 'cookie dough',
+            amount: 2,
+            measurement: 'cup'
+          }],
           __v: 0
         });
       });
@@ -48,9 +59,9 @@ describe('app routes', () => {
 
   it('gets all recipes', async() => {
     const recipes = await Recipe.create([
-      { name: 'cookies', directions: [] },
-      { name: 'cake', directions: [] },
-      { name: 'pie', directions: [] }
+      { name: 'cookies', directions: [], ingredients: [{ name: 'cookie dough', amount: 2, measurement: 'cup' }] },
+      { name: 'cake', directions: [], ingredients: [{ name: 'cake dough', amount: 2, measurement: 'cup' }] },
+      { name: 'pie', directions: [], ingredients: [{ name: 'pie dough', amount: 2, measurement: 'cup' }] }
     ]);
 
     return request(app)
@@ -61,6 +72,36 @@ describe('app routes', () => {
             _id: recipe._id.toString(),
             name: recipe.name
           });
+        });
+      });
+  });
+
+  it('gets a recipe by id', async() => {
+    const recipe = await Recipe.create({
+      name: 'pizza',
+      directions: [
+        'preheat oven to 375',
+        'mix ingredients',
+        'put dough on cookie sheet',
+        'bake for 10 minutes'
+      ],
+      ingredients: [{ name: 'pizza dough', amount: 2, measurement: 'cup' }]
+    });
+
+    return request(app)
+      .get(`/api/v1/recipes/${recipe._id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          __v: 0,
+          _id: recipe._id.toString(),
+          name: 'pizza',
+          directions: [
+            'preheat oven to 375',
+            'mix ingredients',
+            'put dough on cookie sheet',
+            'bake for 10 minutes'
+          ],
+          ingredients: [{ name: 'pizza dough', amount: 2, measurement: 'cup', _id: expect.any(String) }]
         });
       });
   });
@@ -89,6 +130,36 @@ describe('app routes', () => {
             'put dough on cookie sheet',
             'bake for 10 minutes'
           ],
+          ingredients: [],
+          __v: 0
+        });
+      });
+  });
+
+  it('deletes a recipe by id', async() => {
+    const recipe = await Recipe.create({
+      name: 'chocolate chip cookies',
+      directions: [
+        'preheat oven to 375',
+        'mix ingredients, including choco chips',
+        'put dough on cookie sheet',
+        'bake for 10 minutes'
+      ],
+    });
+
+    return request(app)
+      .delete(`/api/v1/recipes/${recipe._id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.any(String),
+          name: 'chocolate chip cookies',
+          directions: [
+            'preheat oven to 375',
+            'mix ingredients, including choco chips',
+            'put dough on cookie sheet',
+            'bake for 10 minutes'
+          ],
+          ingredients: [],
           __v: 0
         });
       });
